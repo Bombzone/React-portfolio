@@ -21,6 +21,7 @@ export default class App extends Component {
 
     this.handleSuccessfulLogin = this.handleSuccessfulLogin.bind(this);
     this.handleUnsuccessfulLogin = this.handleUnsuccessfulLogin.bind(this);
+    this.handleSuccessfulLogout = this.handleSuccessfulLogout.bind(this);
   }
 
   handleSuccessfulLogin() {
@@ -35,18 +36,20 @@ export default class App extends Component {
     });
   }
 
+  handleSuccessfulLogout() {
+    this.setState({
+      loggedInStatus: "NOT_LOGGED_IN"
+    });
+  }
+
   checkLoginStatus() {
     return axios
       .get("https://api.devcamp.space/logged_in", {
-      withCredentials: true 
+        withCredentials: true
       })
       .then(response => {
         const loggedIn = response.data.logged_in;
         const loggedInStatus = this.state.loggedInStatus;
-
-        // If loggedIn and status LOGGED_IN => return data
-        // If loggedIn status NOT_LOGGED_IN => update state
-        // If not loggedIn and status LOGGED_IN => update state
 
         if (loggedIn && loggedInStatus === "LOGGED_IN") {
           return loggedIn;
@@ -61,27 +64,29 @@ export default class App extends Component {
         }
       })
       .catch(error => {
-            console.log("Error", error);
-          });
-        }
+        console.log("Error", error);
+      });
+  }
 
   componentDidMount() {
     this.checkLoginStatus();
   }
+
   authorizedPages() {
-    return [
-      <Route path="/blog" component={Blog} />
-    ]
+    return [<Route path="/blog" component={Blog} />];
   }
+
   render() {
     return (
       <div className="container">
         <Router>
           <div>
-            <NavigationContainer loggedInStatus={this.state.loggedInStatus}/>
+            <NavigationContainer
+              loggedInStatus={this.state.loggedInStatus}
+              handleSuccessfulLogout={this.handleSuccessfulLogout}
+            />
 
-            <h2>{this.state.loggedInStatus}</h2>
-
+           <h2>{this.state.loggedInStatus}</h2>
             <Switch>
               <Route exact path="/" component={Home} />
 
@@ -100,7 +105,7 @@ export default class App extends Component {
               <Route path="/contact" component={Contact} />
               {this.state.loggedInStatus === "LOGGED_IN" ? (
                 this.authorizedPages()
-              ): null }
+              ) : null}
               <Route
                 exact
                 path="/portfolio/:slug"
